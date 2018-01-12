@@ -17,6 +17,7 @@ class EntityTest extends AbstractTestCase
      */
     public function testExpire()
     {
+        //$this->markTestSkipped();
         $redis = $this->redis;
         $key = new Key('TestKey:'.uniqid('', true), $redis);
 
@@ -24,7 +25,7 @@ class EntityTest extends AbstractTestCase
         $this->assertTrue($key->exists());
         $this->assertTrue($key->expire(1));
         $this->assertTrue($key->exists());
-        sleep(1.3);
+        sleep(2);
         $this->assertFalse($key->exists());
     }
 

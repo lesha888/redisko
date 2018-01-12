@@ -41,21 +41,21 @@ after_success:
 
 matrix:
   include:
-    - php: 7.0
-      env: setup=lowest
+#    - php: 7.0
+#      env: setup=lowest
     - php: 7.0
       env:
         - phpstan=true
         - setup=stable
-    - php: 7.1
-      env: setup=lowest
+#    - php: 7.1
+#      env: setup=lowest
     - php: 7.1
       env:
         - coverage=true
         - phpstan=true
         - setup=stable
-    - php: 7.2
-      env: setup=lowest
+#    - php: 7.2
+#      env: setup=lowest
     - php: 7.2
       env:
         - phpstan=true
