@@ -1,6 +1,6 @@
 {
   "name": "lesha888/redisko",
-  "description": "Redis abstraction for php",
+  "description": "Php classes for redis",
   "license": "WTFPL",
   "authors": [
     {

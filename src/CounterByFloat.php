@@ -9,7 +9,7 @@ use Redisko\Serializer\SerializerInterface;
 /**
  * Represents a redis counter that can be atomically incremented and decremented.
  * <pre>
- * $counter = new Redisko\Counter("totalPageViews");
+ * $counter = new Redisko\CounterByFloat("totalPageViews");
  * $counter->increment();
  * echo $counter->getValue();
  * </pre>
@@ -52,7 +52,7 @@ class CounterByFloat extends Entity
 
     /**
      * Increments the counter by the given amount
-     * @param integer $byAmount the amount to increment by, defaults to 1
+     * @param float|string|int $byAmount the amount to increment by, defaults to 1
      * @return string|false the new value of the counter
      */
     public function increment($byAmount = 1)
@@ -62,8 +62,8 @@ class CounterByFloat extends Entity
 
     /**
      * Decrements the counter by the given amount
-     * @param integer $byAmount the amount to decrement by, defaults to 1
-     * @return string the new value of the counter
+     * @param float|string|int $byAmount the amount to decrement by, defaults to 1
+     * @return string|false the new value of the counter
      */
     public function decrement($byAmount = 1)
     {

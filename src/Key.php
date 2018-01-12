@@ -4,11 +4,11 @@ namespace Redisko;
 
 
 /**
- * Represents a redis counter that can be atomically incremented and decremented.
+ * Represents a simple key
  * <pre>
- * $counter = new Redisko\Counter("totalPageViews");
- * $counter->increment();
- * echo $counter->getValue();
+ * $counter = new Redisko\Key("totalPageViews");
+ * $counter->set('value');
+ * echo $counter->get();
  * </pre>
  */
 class Key extends Entity

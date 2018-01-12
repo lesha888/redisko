@@ -24,7 +24,7 @@ class EntityTest extends AbstractTestCase
         $this->assertTrue($key->exists());
         $this->assertTrue($key->expire(1));
         $this->assertTrue($key->exists());
-        sleep(1);
+        sleep(1.3);
         $this->assertFalse($key->exists());
     }
 
