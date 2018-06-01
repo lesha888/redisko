@@ -44,14 +44,7 @@ class SortedSet extends IterableEntity
             return false;
         }
 
-        if (($this->_mode & self::MODE_KEEP_ACTUAL_STATE) && isset($this->_data)) {
-            $result = !key_exists($key, $this->_data);
-            $this->_data[$key] = $score;
-
-            return $result;
-        } else {
-            $this->clearState();
-        }
+        $this->clearState();
 
         return true;
     }
