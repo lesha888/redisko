@@ -31,8 +31,10 @@ class SortedSet extends IterableEntity
 
     /**
      * Adds an item to the set
-     * @param string $key the key to add
+     *
+     * @param string  $key the key to add
      * @param integer $value the score for this key
+     *
      * @return boolean true if the item was added, otherwise false
      * @throws \Exception
      */
@@ -41,14 +43,24 @@ class SortedSet extends IterableEntity
         if (!$this->redis->zAdd($this->name, $score, $key)) {
             return false;
         }
-        $this->clearState();
+
+        if (($this->_mode & self::MODE_KEEP_ACTUAL_STATE) && isset($this->_data)) {
+            $result = !key_exists($key, $this->_data);
+            $this->_data[$key] = $score;
+
+            return $result;
+        } else {
+            $this->clearState();
+        }
 
         return true;
     }
 
     /**
      * Removes an item from the set
+     *
      * @param string $key the item to remove
+     *
      * @return boolean true if the item was removed, otherwise false
      * @throws \Exception
      */
@@ -57,6 +69,7 @@ class SortedSet extends IterableEntity
         if (!$this->redis->zRem($this->name, $this->serialize($key))) {
             return false;
         }
+
         $this->clearState();
 
         return true;
@@ -64,8 +77,10 @@ class SortedSet extends IterableEntity
 
     /**
      * Increment (or decrement if $byAmount is negative) the score of an item from the set
-     * @param $key
+     *
+     * @param         $key
      * @param integer $byAmount the amount to increment by, defaults to 1
+     *
      * @return int the new value of the score if was incremented, otherwise false
      * @throws \Exception
      */
@@ -81,9 +96,11 @@ class SortedSet extends IterableEntity
 
     /**
      * Gets the intersection between this set and the given set(s), stores it in a new set and returns it
+     *
      * @param SortedSet|string $destination the destination to store the result in
-     * @param mixed $set The sets to compare to, either Redisko\SortedSet instances or their names
-     * @param array $weights the weights for the sets, if any
+     * @param mixed            $set The sets to compare to, either Redisko\SortedSet instances or their names
+     * @param array            $weights the weights for the sets, if any
+     *
      * @return SortedSet a set that contains the intersection between this set and the given sets
      * @throws \Exception
      */
@@ -124,9 +141,11 @@ class SortedSet extends IterableEntity
 
     /**
      * Gets the union of this set and the given set(s), stores it in a new set and returns it
+     *
      * @param SortedSet|string $destination the destination to store the result in
-     * @param mixed $set The sets to compare to, either Redisko\SortedSet instances or their names
-     * @param array $weights the weights for the sets, if any
+     * @param mixed            $set The sets to compare to, either Redisko\SortedSet instances or their names
+     * @param array            $weights the weights for the sets, if any
+     *
      * @return SortedSet a set that contains the union of this set and the given sets
      */
     public function unionStore(SortedSet $destination, $set, $weights = null): SortedSet
@@ -165,8 +184,104 @@ class SortedSet extends IterableEntity
     }
 
     /**
+     * @param string $start
+     * @param string $stop
+     * @param array  $options
+     *
+     * @return array
+     *
+     * @see Redis::zRangeByScore()
+     */
+    public function getRangeByScore(string $start, string $stop, array $options = []): array
+    {
+        return $this->redis->zRangeByScore($this->name, $start, $stop, $options);
+    }
+
+    /**
+     * @param string $start
+     * @param string $stop
+     * @param array  $options
+     *
+     * @return array
+     *
+     * @see Redis::zRevRangeByScore()
+     */
+    public function getRevRangeByScore(string $start, string $stop, array $options = []): array
+    {
+        return $this->redis->zRevRangeByScore($this->name, $start, $stop, $options);
+    }
+
+    /**
+     * @param      $start
+     * @param      $end
+     * @param bool $withscores
+     *
+     * @return array
+     *
+     * @see Redis::zRange()
+     */
+    public function getRange($start, $end, $withscores = false)
+    {
+        return $this->redis->zRange($this->name, $start, $end, $withscores);
+    }
+
+
+    /**
+     */
+    public function getFirst()
+    {
+        return $this->getRange(0, 0, false);
+    }
+
+    /**
+     * @return array
+     */
+    public function getFirstWithScore()
+    {
+        return $this->getRange(0, 0, true);
+    }
+    /**
+     * @param bool $withscores
+     *
+     * @return null
+     */
+    public function getMinScore(bool $withscores = false)
+    {
+        return array_values($this->getFirstWithScore())[0] ?? null;
+    }
+
+    /**
+     * @param bool $withscores
+     *
+     * @return null
+     */
+    public function getMaxScore(bool $withscores = false)
+    {
+        return array_values($this->getLastWithScore())[0] ?? null;
+    }
+
+    /**
+     */
+    public function getLast()
+    {
+        return $this->getRange(-1, -1, false);
+    }
+
+    /**
+     * @param bool $withscores
+     *
+     * @return array
+     */
+    public function getLastWithScore(bool $withscores = false)
+    {
+        return $this->getRange(-1, -1, true);
+    }
+
+    /**
      * Gets the number of items in the set
+     *
      * @param boolean $forceRefresh whether to force a refresh or not
+     *
      * @return integer the number of items in the set
      */
     public function getCount($forceRefresh = false): int
@@ -180,7 +295,9 @@ class SortedSet extends IterableEntity
 
     /**
      * Gets all the members in the  sorted set
+     *
      * @param boolean $forceRefresh whether to force a refresh or not
+     *
      * @return array the members in the set
      */
     public function getData(bool $forceRefresh = false): array
@@ -197,7 +314,9 @@ class SortedSet extends IterableEntity
 
     /**
      * Returns the score of member in the sorted set at key.
+     *
      * @param $member
+     *
      * @return string|float
      */
     public function getScore($member)
@@ -208,7 +327,9 @@ class SortedSet extends IterableEntity
     /**
      * Returns whether there is an item at the specified offset.
      * This method is required by the interface ArrayAccess.
+     *
      * @param integer $offset the offset to check on
+     *
      * @return boolean
      */
     public function offsetExists($offset): bool
@@ -219,7 +340,9 @@ class SortedSet extends IterableEntity
     /**
      * Returns the item at the specified offset.
      * This method is required by the interface ArrayAccess.
+     *
      * @param integer $offset the offset to retrieve item.
+     *
      * @return mixed the item at the offset
      */
     public function offsetGet($offset)
@@ -230,8 +353,10 @@ class SortedSet extends IterableEntity
     /**
      * Sets the item at the specified offset.
      * This method is required by the interface ArrayAccess.
+     *
      * @param integer $offset the offset to set item
-     * @param mixed $item the item value
+     * @param mixed   $item the item value
+     *
      * @throws \Exception
      */
     public function offsetSet($offset, $item)
@@ -242,7 +367,9 @@ class SortedSet extends IterableEntity
     /**
      * Unsets the item at the specified offset.
      * This method is required by the interface ArrayAccess.
+     *
      * @param integer $offset the offset to unset item
+     *
      * @throws \Exception
      */
     public function offsetUnset($offset)
@@ -252,7 +379,8 @@ class SortedSet extends IterableEntity
 
     /**
      * @param string $key
-     * @param $value
+     * @param        $value
+     *
      * @throws NotSupportedException
      */
     public function set(string $key, $value)
@@ -260,8 +388,10 @@ class SortedSet extends IterableEntity
         throw new NotSupportedException('Method '.__METHOD__.' not supported');
     }
 
+
     /**
      * @param SerializerInterface $serializer
+     *
      * @throws SerializerIsNotSupportedException
      */
     public function setSerializer(SerializerInterface $serializer)
